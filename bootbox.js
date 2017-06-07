@@ -192,6 +192,10 @@
         button.label = key;
       }
 
+      if (!button.index){
+        button.index = index;
+      }
+
       if (!button.className) {
         if (total <= 2 && isLast) {
           // always add a primary to the main option in a one or two-button dialog
@@ -595,13 +599,26 @@
       );
     }
 
-    each(buttons, function(key, button) {
+
+    var orderedButtons = [];
+    each(buttons, function(key, button, index) {
+        orderedButtons[index] = {'button':button, 'key':key};
+    });
+    orderedButtons.sort(function(a, b) {
+        if (a.button.index < b.button.index) 
+           return -1; 
+        if (a.button.index > b.button.index)
+           return 1;
+        return 0; 
+    });
+    
+    each(orderedButtons, function(_, buttonKey) {
 
       // @TODO I don't like this string appending to itself; bit dirty. Needs reworking
       // can we just build up button elements instead? slower but neater. Then button
       // can just become a template too
-      buttonStr += "<button data-bb-handler='" + key + "' type='button' class='btn " + button.className + "'>" + button.label + "</button>";
-      callbacks[key] = button.callback;
+      buttonStr += "<button data-bb-handler='" + buttonKey.key + "' type='button' class='btn " + buttonKey.button.className + "'>" + buttonKey.button.label + "</button>";
+      callbacks[buttonKey.key] = buttonKey.button.callback;
     });
 
     body.find(".bootbox-body").html(options.message);
